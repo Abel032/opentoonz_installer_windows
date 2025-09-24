@@ -46,6 +46,7 @@ Name: "zh_CHS"; MessagesFile: "Languages\Unofficial\ChineseSimplified.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}";
+Name: "setapplanguage"; Description: "{cm:SetAppLanguageTask}"; GroupDescription: "{cm:LanguageSettings}"; Flags: checkedonce
 
 [Files]
 #include "files.iss"
@@ -96,6 +97,36 @@ zh_CHS.OverwriteStuffCheckBoxLabel=覆盖Stuff文件夹中的所有配置文件�
 
 ; TODO: Add multilingual translations for the four custom messages
 
+en.LanguageSettings=Language Settings
+en.SetAppLanguageTask=Use English as the software language
+
+jp.LanguageSettings=言語設定
+jp.SetAppLanguageTask=ソフトウェアの言語を日本語に設定
+
+zh_CHS.LanguageSettings=语言设置
+zh_CHS.SetAppLanguageTask=将软件语言设置为简体中文
+
+fr.LanguageSettings=Paramètres de langue
+fr.SetAppLanguageTask=Utiliser le français comme langue du logiciel
+
+it.LanguageSettings=Impostazioni lingua
+it.SetAppLanguageTask=Usa l'italiano come lingua del software
+
+de.LanguageSettings=Spracheinstellungen
+de.SetAppLanguageTask=Deutsch als Software-Sprache verwenden
+
+es.LanguageSettings=Configuración de idioma
+es.SetAppLanguageTask=Usar español como idioma del software
+
+cs.LanguageSettings=Nastavení jazyka
+cs.SetAppLanguageTask=Použít češtinu jako jazyk softwaru
+
+ru.LanguageSettings=Языковые настройки
+ru.SetAppLanguageTask=Использовать русский как язык программного обеспечения
+
+ko.LanguageSettings=언어 설정
+ko.SetAppLanguageTask=소프트웨어 언어로 한국어 사용
+
 [Code]
 var
   GeneralDirPage: TInputDirWizardPage;
@@ -127,4 +158,42 @@ end;
 function IsOverwiteStuffCheckBoxChecked: Boolean;
 begin
   Result := OverwriteStuffCheckBox.Checked;
+end;
+
+// Set App Language Task
+procedure SetAppLanguage;
+var
+  LanguageName: string;
+  PreferencesDir: string;
+  PreferencesFile: string;
+  UserName: string;
+begin
+  UserName := GetUserNameString();
+  PreferencesDir := AddBackslash(GetGeneralDir('')) + 'profiles\layouts\settings.' + UserName;
+  PreferencesFile := PreferencesDir + '\preferences.ini';
+  
+  ForceDirectories(ExtractFileDir(PreferencesFile));
+  
+  case ActiveLanguage of
+    'jp': LanguageName := '\x65e5\x672c\x8a9e'; // 日本語
+    'zh_CHS': LanguageName := '\x4e2d\x6587'; // 中文
+    'fr': LanguageName := 'Fran\xe7\x61is'; // Français
+    'it': LanguageName := 'Italiano'; // Italiano
+    'de': LanguageName := 'Deutsch'; // Deutsch
+    'es': LanguageName := 'Espa\xf1ol'; // Español
+    'cs': LanguageName := '\x10c\x65\x161tina'; // Čeština
+    'ru': LanguageName := '\x420\x443\x441\x441\x43a\x438\x439'; // Русский
+    'ko': LanguageName := '\xd55c\xad6d\xc5b4'; // 한국어
+  else
+    LanguageName := 'English';
+  end;
+  
+  SetIniString('General', 'CurrentLanguageName', LanguageName, PreferencesFile);
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then
+    if IsTaskSelected('setapplanguage') then
+      SetAppLanguage;
 end;
